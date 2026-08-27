@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  
+  <!-- MY P.P -->
+  <title>내 자산관리</title>
+  <meta name="apple-mobile-web-app-title" content="내 자산관리">
+  
+  <!-- 주소창을 없애고 진짜 어플처럼 전체화면으로 실행하게 해주는 마법의 태그 -->
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  
+  <!-- 💡 2. 여기에 아까 준비한 아이콘 이미지 주소를 넣으세요 (따옴표 안에) -->
+  <link rel="icon" sizes="192x192" href="<a href="https://www.flaticon.com/kr/free-icons/" title="대한민국 아이콘">대한민국 아이콘 제작자: Magnific - Flaticon</a>.png">
+  <link rel="apple-touch-icon" href="<a href="https://www.flaticon.com/kr/free-icons/" title="대한민국 아이콘">대한민국 아이콘 제작자: Magnific - Flaticon</a>.png">
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
+  <style>
+    body { font-family: 'Pretendard', sans-serif; background-color: #F4F5F7; color: #212529; -webkit-text-size-adjust: 100%; margin: 0; padding: 0; }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+    ::-webkit-scrollbar { height: 6px; }
+    ::-webkit-scrollbar-thumb { background-color: #DEE2E6; border-radius: 10px; }
+  </style>
+</head>
+<body class="bg-gray-100 pb-20">
+
+  <header class="bg-[#343A40] text-white sticky top-0 z-50 w-full shadow-md">
+    <div class="max-w-md mx-auto px-4 py-3 flex justify-between items-center">
+      <!-- 자산관리 -->
+      <h1 class="text-sm font-bold tracking-tight">내 자산관리</h1>
+      <span class="text-[11px] bg-[#495057] px-2.5 py-0.5 rounded-full text-[#E9ECEF] font-semibold">시트 연동됨</span>
+    </div>
+  </header>
+
+  <main class="max-w-md mx-auto px-3 pt-3 space-y-3">
+    
+    <div class="bg-gradient-to-br from-[#212529] to-[#343A40] text-white p-5 rounded-2xl shadow-md w-full">
+      <div class="flex justify-between items-center">
+        <p class="text-[13px] font-medium text-[#ADB5BD] shrink-0">총 자산 합계</p>
+        <h2 class="text-2xl font-black tracking-tight text-right w-full" id="ui-totalAsset">로딩중... <span class="text-sm font-normal text-[#ADB5BD]">원</span></h2>
+      </div>
+      <div class="mt-4 pt-3 border-t border-white/10 flex justify-between text-xs text-[#ADB5BD]">
+        <span>포트폴리오 상태</span>
+        <span class="font-bold text-emerald-400">안정적으로 성장 중 ✨</span>
+      </div>
+    </div>
+
+    <!-- 4가지 자산 요약 -->
+    <div class="grid grid-cols-2 gap-2 w-full">
+      <div class="bg-white p-3 rounded-xl shadow-sm border border-gray-200 text-center">
+        <span class="text-xs font-bold text-[#495057]">📈 주식</span>
+        <p class="text-xs font-black text-[#212529] mt-1"><span id="ui-stocks">0</span>원</p>
+        <span id="ui-stocks-percent" class="text-[10px] text-[#FF9E9E] font-bold block mt-0.5">0.0%</span>
+      </div>
+      <div class="bg-white p-3 rounded-xl shadow-sm border border-gray-200 text-center">
+        <span class="text-xs font-bold text-[#495057]">🌱 예적금</span>
+        <p class="text-xs font-black text-[#212529] mt-1"><span id="ui-savings">0</span>원</p>
+        <span id="ui-savings-percent" class="text-[10px] text-[#9AC4F8] font-bold block mt-0.5">0.0%</span>
+      </div>
+      <div class="bg-white p-3 rounded-xl shadow-sm border border-gray-200 text-center">
+        <span class="text-xs font-bold text-[#495057]">💰 현금</span>
+        <p class="text-xs font-black text-[#212529] mt-1"><span id="ui-cash">0</span>원</p>
+        <span id="ui-cash-percent" class="text-[10px] text-[#F6D365] font-bold block mt-0.5">0.0%</span>
+      </div>
+      <div class="bg-white p-3 rounded-xl shadow-sm border border-gray-200 text-center">
+        <span class="text-xs font-bold text-[#495057]">🏠 보험</span>
+        <p class="text-xs font-black text-[#212529] mt-1"><span id="ui-insurance">0</span>원</p>
+        <span id="ui-insurance-percent" class="text-[10px] text-[#5EC8A5] font-bold block mt-0.5">0.0%</span>
+      </div>
+    </div>
+
+    <!-- 차트 영역 -->
+    <div class="space-y-3 w-full">
+      <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200 w-full">
+        <h3 class="text-xs font-bold text-[#212529] mb-2">자산 구성 비중</h3>
+        <div class="relative w-44 h-44 mx-auto my-1 flex items-center justify-center">
+          <canvas id="assetDoughnutChart"></canvas>
+          <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+            <span class="text-[9px] text-gray-400 font-medium">총 합계</span>
+            <span class="text-[11px] font-bold text-[#212529]" id="ui-donutTotal">계산중...</span>
+          </div>
+        </div>
+        <div class="grid grid-cols-2 gap-y-2 gap-x-1 justify-items-center text-[11px] text-gray-800 mt-4 pt-3 border-t border-gray-100 font-bold max-w-[200px] mx-auto">
+          <div class="flex items-center space-x-1 w-full justify-center"><span class="w-2.5 h-2.5 rounded-full bg-[#FF9E9E] inline-block"></span><span id="legend-stocks">주식 (0.0%)</span></div>
+          <div class="flex items-center space-x-1 w-full justify-center"><span class="w-2.5 h-2.5 rounded-full bg-[#9AC4F8] inline-block"></span><span id="legend-savings">예적금 (0.0%)</span></div>
+          <div class="flex items-center space-x-1 w-full justify-center"><span class="w-2.5 h-2.5 rounded-full bg-[#F6D365] inline-block"></span><span id="legend-cash">현금 (0.0%)</span></div>
+          <div class="flex items-center space-x-1 w-full justify-center"><span class="w-2.5 h-2.5 rounded-full bg-[#5EC8A5] inline-block"></span><span id="legend-insurance">보험 (0.0%)</span></div>
+        </div>
+      </div>
+
+      <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200 w-full">
+        <div class="flex justify-between items-center mb-2">
+          <h3 class="text-xs font-bold text-[#212529]">월별 자산 성장 추이</h3>
+          <span class="text-[9px] bg-gray-200 text-[#343A40] px-2 py-0.5 rounded font-bold">1년 단위</span>
+        </div>
+        <div class="relative w-full h-52">
+          <canvas id="growthBarChart"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- 하단 테이블 영역 -->
+    <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200 w-full">
+      <div class="flex justify-between items-center mb-3">
+        <h3 class="text-xs font-bold text-[#212529]">카테고리별 상세 현황</h3>
+        <span class="text-[9px] text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded font-bold">시트 실시간 연동</span>
+      </div>
+
+      <div class="grid grid-cols-4 gap-1 bg-gray-200 p-1 rounded-xl mb-3 text-center">
+        <button onclick="switchTab('stocks')" id="btn-stocks" class="py-2.5 text-[11px] font-bold rounded-lg bg-[#343A40] text-white transition shadow-sm">주식</button>
+        <button onclick="switchTab('cash')" id="btn-cash" class="py-2.5 text-[11px] font-bold rounded-lg text-gray-700 transition">현금</button>
+        <button onclick="switchTab('savings')" id="btn-savings" class="py-2.5 text-[11px] font-bold rounded-lg text-gray-700 transition">예적금</button>
+        <button onclick="switchTab('insurance')" id="btn-insurance" class="py-2.5 text-[11px] font-bold rounded-lg text-gray-700 transition">보험</button>
+      </div>
+
+      <div class="overflow-x-auto w-full pb-2">
+        <div id="content-stocks" class="tab-content active">
+          <table class="w-full text-left text-[12px] min-w-[400px] whitespace-nowrap">
+            <thead>
+              <tr class="border-b border-gray-200 text-gray-500 font-bold">
+                <th class="py-2.5 font-bold whitespace-nowrap">종목</th>
+                <th class="py-2.5 font-bold text-center whitespace-nowrap">주식수</th>
+                <th class="py-2.5 font-bold text-right whitespace-nowrap">원금</th>
+                <th class="py-2.5 font-bold text-right whitespace-nowrap">평가금액</th>
+              </tr>
+            </thead>
+            <tbody id="table-stocks" class="divide-y divide-gray-100 text-[#212529] font-medium">
+              <tr><td colspan="4" class="py-3 text-center text-gray-400">데이터 불러오는 중...</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div id="content-cash" class="tab-content">
+          <table class="w-full text-left text-[13px]">
+            <thead>
+              <tr class="border-b border-gray-200 text-gray-500 font-bold">
+                <th class="py-2.5 font-bold">계좌</th>
+                <th class="py-2.5 font-bold text-right">잔액</th>
+              </tr>
+            </thead>
+            <tbody id="table-cash" class="divide-y divide-gray-100 text-[#212529] font-medium">
+              <tr><td colspan="2" class="py-3 text-center text-gray-400">데이터 불러오는 중...</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div id="content-savings" class="tab-content">
+          <table class="w-full text-left text-[13px]">
+            <thead>
+              <tr class="border-b border-gray-200 text-gray-500 font-bold">
+                <th class="py-2.5 font-bold">상품명</th>
+                <th class="py-2.5 font-bold text-right">금액</th>
+              </tr>
+            </thead>
+            <tbody id="table-savings" class="divide-y divide-gray-100 text-[#212529] font-medium">
+              <tr><td colspan="2" class="py-3 text-center text-gray-400">데이터 불러오는 중...</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div id="content-insurance" class="tab-content">
+          <table class="w-full text-left text-[13px]">
+            <thead>
+              <tr class="border-b border-gray-200 text-gray-500 font-bold">
+                <th class="py-2.5 font-bold">상품명</th>
+                <th class="py-2.5 font-bold text-right">금액</th>
+              </tr>
+            </thead>
+            <tbody id="table-insurance" class="divide-y divide-gray-100 text-[#212529] font-medium">
+              <tr><td colspan="2" class="py-3 text-center text-gray-400">데이터 불러오는 중...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    let myDoughnutChart, myBarChart;
+
+    // 💡 4. 이 곳에 1단계에서 메모장에 복사해둔 [웹 앱 URL]을 붙여넣으세요!
+    const API_URL = https://script.google.com/macros/s/AKfycby1WllYX74l5SfXIsd7uqS1kwSXLX31xu_HxtquHHun_RZmBM3EXJPKOhf6uT48g8SyIQ/exec
+
+    function switchTab(tabName) {
+      document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll('[id^="btn-"]').forEach(el => {
+        el.classList.remove('bg-[#343A40]', 'text-white', 'shadow-sm');
+        el.classList.add('text-gray-700');
+      });
+      document.getElementById('content-' + tabName).classList.add('active');
+      const activeBtn = document.getElementById('btn-' + tabName);
+      activeBtn.classList.add('bg-[#343A40]', 'text-white', 'shadow-sm');
+      activeBtn.classList.remove('text-gray-700');
+    }
+
+    function formatKoreanCurrency(numStr) {
+      if (!numStr) return '0원';
+      let num = parseInt(numStr.toString().replace(/,/g, ''), 10);
+      if (isNaN(num) || num === 0) return '0원';
+      let eok = Math.floor(num / 100000000);
+      let man = Math.floor((num % 100000000) / 10000);
+      let result = '';
+      if (eok > 0) result += eok.toLocaleString() + '억 ';
+      if (man > 0) result += man.toLocaleString() + '만';
+      return result.trim() + '원';
+    }
+
+    window.addEventListener('load', function() {
+      // API에서 데이터 가져오기 (이 부분이 핵심입니다!)
+      fetch(API_URL)
+        .then(response => response.json())
+        .then(data => {
+          if(data) {
+            if(data.totalAsset) {
+              document.getElementById('ui-totalAsset').innerHTML = data.totalAsset + ' <span class="text-sm font-normal text-[#ADB5BD]">원</span>';
+              document.getElementById('ui-donutTotal').innerText = formatKoreanCurrency(data.totalAsset);
+            }
+            if(data.stocksTotal) document.getElementById('ui-stocks').innerText = data.stocksTotal;
+            if(data.savingsTotal) document.getElementById('ui-savings').innerText = data.savingsTotal;
+            if(data.cashTotal) document.getElementById('ui-cash').innerText = data.cashTotal;
+            if(data.insuranceTotal) document.getElementById('ui-insurance').innerText = data.insuranceTotal;
+
+            if(data.stocksList) renderStockTable(data.stocksList);
+            if(data.cashList) renderSimpleTable('table-cash', data.cashList);
+            if(data.savingsList) renderSimpleTable('table-savings', data.savingsList);
+            if(data.insuranceList) renderSimpleTable('table-insurance', data.insuranceList);
+
+            if(data.raw && data.raw.total > 0) {
+              const total = data.raw.total;
+              const pStocks = ((data.raw.stocks / total) * 100).toFixed(1);
+              const pSavings = ((data.raw.savings / total) * 100).toFixed(1);
+              const pCash = ((data.raw.cash / total) * 100).toFixed(1);
+              const pInsurance = ((data.raw.insurance / total) * 100).toFixed(1);
+
+              document.getElementById('ui-stocks-percent').innerText = `${pStocks}%`;
+              document.getElementById('ui-savings-percent').innerText = `${pSavings}%`;
+              document.getElementById('ui-cash-percent').innerText = `${pCash}%`;
+              document.getElementById('ui-insurance-percent').innerText = `${pInsurance}%`;
+
+              document.getElementById('legend-stocks').innerText = `주식 (${pStocks}%)`;
+              document.getElementById('legend-savings').innerText = `예적금 (${pSavings}%)`;
+              document.getElementById('legend-cash').innerText = `현금 (${pCash}%)`;
+              document.getElementById('legend-insurance').innerText = `보험 (${pInsurance}%)`;
+
+              if(myDoughnutChart) {
+                myDoughnutChart.data.datasets[0].data = [pStocks, pSavings, pCash, pInsurance];
+                myDoughnutChart.update();
+              }
+              if(myBarChart) {
+                myBarChart.data.datasets[0].data[6] = data.raw.stocks / 1000000;
+                myBarChart.data.datasets[1].data[6] = data.raw.savings / 1000000;
+                myBarChart.data.datasets[2].data[6] = data.raw.cash / 1000000;
+                myBarChart.data.datasets[3].data[6] = data.raw.insurance / 1000000;
+                myBarChart.update();
+              }
+            }
+          }
+        })
+        .catch(error => {
+          document.getElementById('ui-totalAsset').innerHTML = '연결 오류';
+        });
+    });
+
+    function renderStockTable(items) {
+      const tbody = document.getElementById('table-stocks');
+      if(!items || items.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="4" class="py-3 text-center text-gray-400">등록된 내역이 없습니다.</td></tr>`;
+        return;
+      }
+      tbody.innerHTML = items.map(item => {
+        const amountColor = item.isProfit ? 'text-[#FF9E9E] font-bold' : 'text-[#9AC4F8] font-bold';
+        return `
+          <tr>
+            <td class="py-2.5 font-bold text-gray-800 whitespace-nowrap">${item.name}</td>
+            <td class="py-2.5 text-center text-gray-700 font-semibold whitespace-nowrap">${item.shares}</td>
+            <td class="py-2.5 text-right text-gray-600 whitespace-nowrap">${item.principal}원</td>
+            <td class="py-2.5 text-right ${amountColor} whitespace-nowrap">${item.amount}원</td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function renderSimpleTable(elementId, items) {
+      const tbody = document.getElementById(elementId);
+      if(!items || items.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="2" class="py-3 text-center text-gray-400">등록된 내역이 없습니다.</td></tr>`;
+        return;
+      }
+      tbody.innerHTML = items.map(item => `
+        <tr>
+          <td class="py-2.5 font-bold text-gray-800">${item.name}</td>
+          <td class="py-2.5 text-right font-bold text-[#212529]">${item.amount}원</td>
+        </tr>
+      `).join('');
+    }
+
+    Chart.defaults.font.family = "'Pretendard', sans-serif";
+    const ctxDoughnut = document.getElementById('assetDoughnutChart').getContext('2d');
+    myDoughnutChart = new Chart(ctxDoughnut, {
+      type: 'doughnut',
+      data: { labels: ['주식', '예적금', '현금', '보험'], datasets: [{ data: [0, 0, 0, 0], backgroundColor: ['#FF9E9E', '#9AC4F8', '#F6D365', '#5EC8A5'], borderWidth: 2, borderColor: '#ffffff', cutout: '72%' }] },
+      options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+    });
+
+    const ctxBar = document.getElementById('growthBarChart').getContext('2d');
+    myBarChart = new Chart(ctxBar, {
+      type: 'bar',
+      data: {
+        labels: ['25.09', '25.11', '26.01', '26.03', '26.05', '26.07', '현재'],
+        datasets: [
+          { label: '주식', data: [40, 45, 47, 48, 49, 49.5, 0], backgroundColor: '#FF9E9E', borderRadius: 4 },
+          { label: '예적금', data: [13, 14.1, 14.3, 14.3, 14.3, 14.3, 0], backgroundColor: '#9AC4F8', borderRadius: 4 },
+          { label: '현금', data: [12, 13, 13, 13.1, 13.3, 13.2, 0], backgroundColor: '#F6D365', borderRadius: 4 },
+          { label: '보험', data: [4, 4.1, 4.2, 4.3, 4.3, 4.3, 0], backgroundColor: '#5EC8A5', borderRadius: 4 }
+        ]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } },
+        scales: {
+          x: { stacked: true, grid: { display: false }, ticks: { color: '#495057', font: { size: 10, weight: 'bold' } } },
+          y: { 
+            stacked: true, beginAtZero: true, grid: { color: 'rgba(0, 0, 0, 0.04)' }, 
+            ticks: { 
+              color: '#495057', font: { size: 9, weight: 'bold' }, maxTicksLimit: 10, 
+              callback: function(value) { 
+                if (value === 0) return '0'; 
+                let actualValue = value * 1000000;
+                let eok = Math.floor(actualValue / 100000000);
+                let man = Math.floor((actualValue % 100000000) / 10000);
+                let result = '';
+                if (eok > 0) result += eok.toLocaleString() + '억 ';
+                if (man > 0) result += man.toLocaleString() + '만';
+                return result.trim(); 
+              } 
+            } 
+          }
+        }
+      }
+    });
+  </script>
+</body>
+</html>
